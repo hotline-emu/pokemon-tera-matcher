@@ -3,10 +3,10 @@ package models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type PokemonType struct {
-	Id         primitive.ObjectID `bson:"_id"`
-	Name       string             `bson:"text"`
-	Stengths   []string           `bson:"array"`
-	Weaknesses []string           `bson:"array"`
-	ImmuneTo   []string           `bson:"array"`
-	CannotHit  []string           `bson:"array"`
+	Id         primitive.ObjectID `json:"id,omitempty"`
+	Name       string             `json:"name,omitempty" validate:"required"`
+	Stengths   []string           `json:"stengths,omitempty"`
+	Weaknesses []string           `bson:"weaknesses,omitempty"`
+	ImmuneTo   []string           `bson:"immuneTo,omitempty"`
+	CannotHit  []string           `bson:",cannotHit,omitempty"`
 }
