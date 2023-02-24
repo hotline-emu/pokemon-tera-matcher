@@ -7,5 +7,5 @@ import (
 )
 
 func PokemonTypeRoute(e *echo.Echo) {
-	e.POST("/user", controllers.CreatePokemonType) //add this
+	e.POST("/pokemon-type", controllers.CreatePokemonType)
 }
