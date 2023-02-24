@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -73,6 +74,82 @@ func CreatePokemonType(c echo.Context) error {
 			Status:  http.StatusCreated,
 			Message: "success",
 			Data:    &echo.Map{"data": result},
+		},
+	)
+}
+
+func GetAllPokemonTypes(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	var PokemonTypes []models.PokemonType
+	defer cancel()
+
+	results, err := pokemonTypeCollection.Find(ctx, bson.M{})
+
+	if err != nil {
+		return c.JSON(
+			http.StatusInternalServerError,
+			responses.CommonResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "error",
+				Data:    &echo.Map{"data": err.Error()},
+			},
+		)
+	}
+
+	//reading from the db in an optimal way
+	defer results.Close(ctx)
+	for results.Next(ctx) {
+		var singlePokemonType models.PokemonType
+		if err = results.Decode(&singlePokemonType); err != nil {
+			return c.JSON(
+				http.StatusInternalServerError,
+				responses.CommonResponse{
+					Status:  http.StatusInternalServerError,
+					Message: "error",
+					Data:    &echo.Map{"data": err.Error()},
+				},
+			)
+		}
+
+		PokemonTypes = append(PokemonTypes, singlePokemonType)
+	}
+
+	return c.JSON(
+		http.StatusOK,
+		responses.CommonResponse{
+			Status:  http.StatusOK,
+			Message: "success",
+			Data:    &echo.Map{"data": PokemonTypes},
+		},
+	)
+}
+
+func GetAPokemonType(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	pokemonTypeId := c.Param("id")
+	var PokemonType models.PokemonType
+	defer cancel()
+
+	objId, _ := primitive.ObjectIDFromHex(pokemonTypeId)
+
+	err := pokemonTypeCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&PokemonType)
+	if err != nil {
+		return c.JSON(
+			http.StatusInternalServerError,
+			responses.CommonResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "error",
+				Data:    &echo.Map{"data": err.Error()},
+			},
+		)
+	}
+
+	return c.JSON(
+		http.StatusOK,
+		responses.CommonResponse{
+			Status:  http.StatusOK,
+			Message: "success",
+			Data:    &echo.Map{"data": PokemonType},
 		},
 	)
 }

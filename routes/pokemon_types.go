@@ -8,4 +8,6 @@ import (
 
 func PokemonTypeRoute(e *echo.Echo) {
 	e.POST("/pokemon-type", controllers.CreatePokemonType)
+	e.GET("/pokemon-type", controllers.GetAllPokemonTypes)
+	e.GET("/pokemon-type/:id", controllers.GetAPokemonType)
 }
