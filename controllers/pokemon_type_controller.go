@@ -25,26 +25,12 @@ func CreatePokemonType(c echo.Context) error {
 
 	//validate the request body
 	if err := c.Bind(&pokemonType); err != nil {
-		return c.JSON(
-			http.StatusBadRequest,
-			responses.CommonResponse{
-				Status:  http.StatusBadRequest,
-				Message: "error",
-				Data:    &echo.Map{"data": err.Error()},
-			},
-		)
+		return responses.BadRequest(c, err)
 	}
 
 	//use the validator library to validate required fields
 	if validationErr := validate.Struct(&pokemonType); validationErr != nil {
-		return c.JSON(
-			http.StatusBadRequest,
-			responses.CommonResponse{
-				Status:  http.StatusBadRequest,
-				Message: "error",
-				Data:    &echo.Map{"data": validationErr.Error()},
-			},
-		)
+		return responses.BadRequest(c, validationErr)
 	}
 
 	newPokemonType := models.PokemonType{
@@ -58,14 +44,7 @@ func CreatePokemonType(c echo.Context) error {
 
 	result, err := pokemonTypeCollection.InsertOne(ctx, newPokemonType)
 	if err != nil {
-		return c.JSON(
-			http.StatusInternalServerError,
-			responses.CommonResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "error",
-				Data:    &echo.Map{"data": err.Error()},
-			},
-		)
+		return responses.InternalServerError(c, err)
 	}
 
 	return c.JSON(
@@ -86,14 +65,7 @@ func GetAllPokemonTypes(c echo.Context) error {
 	results, err := pokemonTypeCollection.Find(ctx, bson.M{})
 
 	if err != nil {
-		return c.JSON(
-			http.StatusInternalServerError,
-			responses.CommonResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "error",
-				Data:    &echo.Map{"data": err.Error()},
-			},
-		)
+		return responses.InternalServerError(c, err)
 	}
 
 	//reading from the db in an optimal way
@@ -101,14 +73,7 @@ func GetAllPokemonTypes(c echo.Context) error {
 	for results.Next(ctx) {
 		var singlePokemonType models.PokemonType
 		if err = results.Decode(&singlePokemonType); err != nil {
-			return c.JSON(
-				http.StatusInternalServerError,
-				responses.CommonResponse{
-					Status:  http.StatusInternalServerError,
-					Message: "error",
-					Data:    &echo.Map{"data": err.Error()},
-				},
-			)
+			return responses.InternalServerError(c, err)
 		}
 
 		PokemonTypes = append(PokemonTypes, singlePokemonType)
@@ -134,14 +99,7 @@ func GetAPokemonType(c echo.Context) error {
 
 	err := pokemonTypeCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&PokemonType)
 	if err != nil {
-		return c.JSON(
-			http.StatusInternalServerError,
-			responses.CommonResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "error",
-				Data:    &echo.Map{"data": err.Error()},
-			},
-		)
+		return responses.InternalServerError(c, err)
 	}
 
 	return c.JSON(
