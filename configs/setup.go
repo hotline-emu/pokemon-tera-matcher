@@ -17,22 +17,15 @@ var DB *mongo.Client = ConnectDB()
 
 func ConnectDB() *mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI(getMongoURI()))
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkForSimpleError(err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkForSimpleError(err)
 
 	//ping the database
 	err = client.Ping(ctx, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkForSimpleError(err)
 
 	fmt.Println("Connected to MongoDB")
 	defer cancel()
@@ -53,4 +46,10 @@ func getMongoURI() string {
 	}
 
 	return os.Getenv("MONGO_URI")
+}
+
+func checkForSimpleError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
